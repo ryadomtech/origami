@@ -27,6 +27,7 @@ jobs:
           GITHUB_PACKAGES_USER_NAME: ${{ secrets.GH_PACKAGES_USER_NAME }}
           GITHUB_PACKAGES_PASSWORD: ${{ secrets.GH_PACKAGES_PASSWORD }}
         run: |
+          echo "org.jetbrains.compose.experimental.jscanvas.enabled=true" >> gradle.properties
           echo "githubPackagesUsername=${GITHUB_PACKAGES_USER_NAME}" >> gradle.properties
           echo "githubPackagesPassword=${GITHUB_PACKAGES_PASSWORD}" >> gradle.properties
 
