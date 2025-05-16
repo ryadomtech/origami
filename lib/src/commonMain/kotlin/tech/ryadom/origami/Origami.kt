@@ -43,8 +43,8 @@ class Origami(
      * Cropping [imageBitmap] to crop area
      * @return cropped [imageBitmap]
      */
-    fun crop() {
-//
+    fun crop(): ImageBitmap {
+        return origamiCroppingUtils.cropImage(imageBitmap)
     }
 }
 

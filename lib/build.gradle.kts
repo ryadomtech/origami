@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.publishing)
 }
 
 kotlin {
@@ -32,6 +33,8 @@ kotlin {
                 }
             }
         }
+
+        publishLibraryVariants("release", "debug")
     }
 
     listOf(
@@ -40,7 +43,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "shared"
+            baseName = "origami"
             isStatic = true
         }
     }
@@ -52,27 +55,10 @@ kotlin {
             implementation(compose.ui)
         }
     }
-
-//    @OptIn(ExperimentalKotlinGradlePluginApi::class)
-//    publishing {
-//        repositories {
-//            maven {
-//                name = "GitHub"
-//                url = uri("https://maven.pkg.github.com/ryadomtech/origami")
-//                credentials {
-//                    username = project.findProperty("gpr.user") as String?
-//                        ?: System.getenv("GITHUB_ACTOR")
-//
-//                    password = project.findProperty("gpr.key") as String?
-//                        ?: System.getenv("GITHUB_TOKEN")
-//                }
-//            }
-//        }
-//    }
 }
 
 android {
-    namespace = "tech.ryadom.origami"
+    namespace = "io.github.ryadomtech"
     compileSdk = 35
     defaultConfig {
         minSdk = 24
@@ -80,5 +66,49 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "githubPackages"
+            url = uri("https://maven.pkg.github.com/ryadomtech/origami")
+            credentials(PasswordCredentials::class)
+        }
+    }
+}
+
+mavenPublishing {
+    coordinates(
+        groupId = "tech.ryadom",
+        artifactId = "origami",
+        version = "0.0.1"
+    )
+
+    pom {
+        name.set("Origami")
+        description.set("Simple image cropping tool for Compose Multiplatform")
+        inceptionYear.set("2025")
+        url.set("https://github.com/ryadomtech/origami")
+
+        licenses {
+            license {
+                name.set("Apache License 2.0")
+                url.set("http://www.apache.org/licenses/LICENSE-2.0")
+            }
+        }
+
+        developers {
+            developer {
+                id.set("adkozlovskiy")
+                name.set("Alexey Kozlovsky")
+                email.set("adkozlovskiy@gmail.com")
+            }
+        }
+
+        scm {
+            url.set("https://github.com/ryadomtech/origami")
+        }
     }
 }

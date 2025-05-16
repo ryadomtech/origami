@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "origami"
-include(":shared")
+include(":lib")
