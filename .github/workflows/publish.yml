@@ -1,6 +1,7 @@
 name: Publish
 on:
   workflow_dispatch:
+
 jobs:
   build:
     name: Build
@@ -18,6 +19,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Change wrapper permissions
+        run: chmod +x ./gradlew
+
       - name: Add Gradle Properties
         env:
           GITHUB_PACKAGES_USER_NAME: ${{ secrets.GH_PACKAGES_USER_NAME }}
@@ -31,6 +35,11 @@ jobs:
         with:
           xcode-version: latest-stable
 
+  publish:
+    name: Publish
+    runs-on: macos-latest
+    needs: build
+    steps:
       - name: Publish To GitHub Packages
         run: |
           ./gradlew publishAllPublicationsToGithubPackagesRepository
