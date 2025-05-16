@@ -1,17 +1,19 @@
 # Origami
 
-With this tool you can crop and perform some transformation actions (`rotate`, `flip`) on images in Compose Multiplatform.
+With this tool you can crop and perform some transformation actions (`rotate`, `flip`) on images in
+Compose Multiplatform.
 
 ## Supported targets
 
-| Target          | Implemented                        | Tested |
-|-----------------|------------------------------------|--------|
-| **Android**     | ☑                                 | ☑      |
-| **iOS**         | ☑                                 | ☑      |
-| **JVM Desktop** | ☑                                 | ☑      |
-| **JS**          | ☑                                 | ☑      |
+| Target          | Implemented | Tested |
+|-----------------|-------------|--------|
+| **Android**     | ☑           | ☑      |
+| **iOS**         | ☑           | ☑      |
+| **JVM Desktop** | ☑           | ☑      |
+| **JS**          | ☑           | ☑      |
 
 ### Implementation
+
 In your shared module's build.gradle.kts add
 
 ```Gradle Kotlin DSL
@@ -21,7 +23,9 @@ kotlin.sourceSets.commonMain.dependencies {
 ```
 
 ### Usage
-To create an `Origami` instance, you must call the `Origami.source()` function and pass an `ImageBitmap`, `Uri`, `File`, or `Painter` as an argument.
+
+To create an `Origami` instance, you must call the `Origami.source()` function and pass an
+`ImageBitmap`, `Uri`, `File`, or `Painter` as an argument.
 Then use the `Origami` object as shown below.
 
 ```Kotlin
@@ -38,6 +42,7 @@ origami.crop()
 ```
 
 ### License
+
 ```
    Copyright 2025 Ryadom Tech
 
@@ -55,5 +60,7 @@ origami.crop()
 ```
 
 ### Support
-If you find a bug or want to contribute an improvement, please create an Issue or send an email to opensource@ryadom.tech. 
+
+If you find a bug or want to contribute an improvement, please create an Issue or send an email to
+opensource@ryadom.tech.
 Any support will be appreciated.

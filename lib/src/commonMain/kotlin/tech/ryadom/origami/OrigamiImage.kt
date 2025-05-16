@@ -39,8 +39,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import tech.ryadom.origami.style.OrigamiColors
 import tech.ryadom.origami.style.OrigamiCropArea
-import tech.ryadom.origami.util.OrigamiCroppingUtils
 import tech.ryadom.origami.util.OrigamiCropRect
+import tech.ryadom.origami.util.OrigamiCroppingUtils
 import tech.ryadom.origami.util.extensions.scale
 
 /**
