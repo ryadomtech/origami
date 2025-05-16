@@ -1,0 +1,36 @@
+name: Publish
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    name: Build
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '1.8'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Add Gradle Properties
+        env:
+          GITHUB_PACKAGES_USER_NAME: ${{ secrets.GH_PACKAGES_USER_NAME }}
+          GITHUB_PACKAGES_PASSWORD: ${{ secrets.GH_PACKAGES_PASSWORD }}
+        run: |
+          echo "githubPackagesUsername=${GITHUB_PACKAGES_USER_NAME}" >> gradle.properties
+          echo "githubPackagesPassword=${GITHUB_PACKAGES_PASSWORD}" >> gradle.properties
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Publish To GitHub Packages
+        run: |
+          ./gradlew publishAllPublicationsToGithubPackagesRepository
