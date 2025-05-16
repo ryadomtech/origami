@@ -11,6 +11,7 @@ Compose Multiplatform.
 | **iOS**         | ☑           | ☑      |
 | **JVM Desktop** | ☑           | ☑      |
 | **JS**          | ☑           | ☑      |
+| **WasmJS**      | ☑           | ☑      |
 
 ### Implementation
 
@@ -18,24 +19,24 @@ In your shared module's build.gradle.kts add
 
 ```Gradle Kotlin DSL
 kotlin.sourceSets.commonMain.dependencies {
-  implementation(io.github.com.ryadomtech:origami:1.0.0)
+  implementation("tech.ryadom.origami:0.0.2")
 }
 ```
 
 ### Usage
 
-To create an `Origami` instance, you must call the `Origami.source()` function and pass an
-`ImageBitmap`, `Uri`, `File`, or `Painter` as an argument.
+To create an `Origami` instance, you must call the constructor and pass an
+`ImageBitmap`, `Uri`, `File`, or `Painter` as an arguments.
 Then use the `Origami` object as shown below.
 
 ```Kotlin
-val source = // Your source
-val origami = remember { Origami.source(source) }
+val source = ImageBitmap() // Implement your bitmap here
+val origami = remember { Origami(source) }
 
 OrigamiImage(
   origami = origami,
-  colors = ,
-  shape = 
+  colors = OrigamiColors.defaults(), // Customize colors here 
+  cropArea = OrigamiCropArea() // Customize crop area here
 )
 
 origami.crop()
