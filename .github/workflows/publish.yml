@@ -4,7 +4,7 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Build and publish
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -35,11 +35,6 @@ jobs:
         with:
           xcode-version: latest-stable
 
-  publish:
-    name: Publish
-    runs-on: macos-latest
-    needs: build
-    steps:
       - name: Publish To GitHub Packages
         run: |
           ./gradlew publishAllPublicationsToGithubPackagesRepository
