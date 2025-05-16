@@ -1,3 +1,4 @@
+import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
@@ -57,28 +58,22 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.ryadomtech"
+    namespace = "tech.ryadom.origami"
     compileSdk = 35
+
     defaultConfig {
         minSdk = 24
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
-publishing {
-    repositories {
-        maven {
-            name = "githubPackages"
-            url = uri("https://maven.pkg.github.com/ryadomtech/origami")
-            credentials(PasswordCredentials::class)
-        }
-    }
-}
-
 mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+
     coordinates(
         groupId = "tech.ryadom",
         artifactId = "origami",
@@ -93,8 +88,9 @@ mavenPublishing {
 
         licenses {
             license {
-                name.set("Apache License 2.0")
+                name.set("The Apache License, Version 2.0")
                 url.set("http://www.apache.org/licenses/LICENSE-2.0")
+                distribution.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
             }
         }
 
@@ -108,6 +104,10 @@ mavenPublishing {
 
         scm {
             url.set("https://github.com/ryadomtech/origami")
+            connection.set("scm:git:git://github.com/ryadomtech/origami.git")
+            developerConnection.set("scm:git:ssh://git@github.com/ryadomtech/origami.git")
         }
     }
+
+    signAllPublications()
 }
