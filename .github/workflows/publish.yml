@@ -1,30 +1,21 @@
 name: Publish
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-
-concurrency:
-  group: ${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
+  release:
+    types: [ released, prereleased ]
 
 jobs:
-  build:
-    name: Build and publish
-    runs-on: macos-latest
+  publish:
+    name: Release build and publish
+    runs-on: macOS-latest
     steps:
-      - name: Checkout code
+      - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+          java-version: 17
 
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
@@ -34,14 +25,11 @@ jobs:
         with:
           xcode-version: latest-stable
 
-      - name: Add Gradle Properties
+      - name: Publish to MavenCentral
+        run: ./gradlew publishAllPublicationsToMavenCentralRepository --no-configuration-cache
         env:
-          GITHUB_PACKAGES_USER_NAME: ${{ secrets.GH_PACKAGES_USER_NAME }}
-          GITHUB_PACKAGES_PASSWORD: ${{ secrets.GH_PACKAGES_PASSWORD }}
-        run: |
-          echo "githubPackagesUsername=${GITHUB_PACKAGES_USER_NAME}" >> gradle.properties
-          echo "githubPackagesPassword=${GITHUB_PACKAGES_PASSWORD}" >> gradle.properties
-
-      - name: Publish To GitHub Packages
-        run: |
-          ./gradlew publishAllPublicationsToGithubPackagesRepository
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY_CONTENTS }}
