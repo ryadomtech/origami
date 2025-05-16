@@ -74,6 +74,8 @@ android {
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
 
+    signAllPublications()
+
     coordinates(
         groupId = "tech.ryadom",
         artifactId = "origami",
@@ -108,6 +110,4 @@ mavenPublishing {
             developerConnection.set("scm:git:ssh://git@github.com/ryadomtech/origami.git")
         }
     }
-
-    signAllPublications()
 }
