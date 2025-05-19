@@ -18,17 +18,16 @@ package tech.ryadom.origami
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -40,8 +39,6 @@ import androidx.compose.ui.unit.dp
 import tech.ryadom.origami.style.OrigamiColors
 import tech.ryadom.origami.style.OrigamiCropArea
 import tech.ryadom.origami.util.OrigamiCropRect
-import tech.ryadom.origami.util.OrigamiCroppingUtils
-import tech.ryadom.origami.util.extensions.scale
 
 /**
  * Composable for origami cropping component
@@ -57,81 +54,61 @@ fun OrigamiImage(
     colors: OrigamiColors = OrigamiColors.defaults(),
     cropArea: OrigamiCropArea = OrigamiCropArea()
 ) {
-    val croppingUtilsState by remember {
-        mutableStateOf(OrigamiCroppingUtils(cropArea.aspectRatio))
-    }
+    val origamiCropRect by remember { origami.prepare(cropArea) }
 
-    val croppingUtils = croppingUtilsState
-    origami.origamiCroppingUtils = croppingUtils
-
-    Canvas(
-        modifier = modifier
-            .fillMaxSize()
+    Box(
+        modifier = modifier.fillMaxSize()
             .onSizeChanged { intSize ->
-                croppingUtilsState.onCanvasSizeChanged(intSize = intSize)
+                origami.onCanvasSizeChanged(intSize = intSize)
             }
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDragStart = { touchPoint ->
-                        croppingUtilsState.onDragStart(touchPoint)
-                    },
-                    onDrag = { pointerInputChange, _ ->
-                        pointerInputChange.consume()
+    ) {
+        origami.source.Content(
+            modifier = Modifier.fillMaxSize()
+                .align(Alignment.Center)
+        )
 
-                        val dragPoint = pointerInputChange.position
-                        croppingUtilsState.onDrag(dragPoint)
-                    },
-                    onDragEnd = {
-                        croppingUtils.onDragEnd()
-                    }
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectDragGestures(
+                        onDragStart = { touchPoint ->
+                            origami.onDragStart(touchPoint)
+                        },
+                        onDrag = { pointerInputChange, _ ->
+                            pointerInputChange.consume()
+
+                            val dragPoint = pointerInputChange.position
+                            origami.onDrag(dragPoint)
+                        },
+                        onDragEnd = {
+                            origami.onDragEnd()
+                        }
+                    )
+                },
+            onDraw = {
+                clipPath(
+                    path = cropArea.highlightedShape.getPath(origamiCropRect),
+                    clipOp = ClipOp.Difference
+                ) {
+                    drawRect(
+                        SolidColor(colors.backgroundColor)
+                    )
+                }
+
+                drawCropArea(
+                    guidelinesColor = colors.guidelinesColor,
+                    guidelinesWidth = cropArea.guidelinesWidth,
+                    origamiCropRect = origamiCropRect,
+                    guidelinesCount = cropArea.guidelinesCount
                 )
-            },
-        onDraw = {
-            drawBitmap(
-                bitmap = origami.imageBitmap,
-                canvasSize = croppingUtilsState.canvasSize
-            )
 
-            clipPath(
-                path = cropArea.highlightedShape.getPath(croppingUtils.origamiCropRect),
-                clipOp = ClipOp.Difference
-            ) {
-                drawRect(
-                    SolidColor(colors.backgroundColor)
-                )
+                if (cropArea.edges != null) {
+                    cropArea.edges.onDraw(this, origamiCropRect, colors)
+                }
             }
-
-            drawCropArea(
-                guidelinesColor = colors.guidelinesColor,
-                guidelinesWidth = cropArea.guidelinesWidth,
-                origamiCropRect = croppingUtils.origamiCropRect,
-                guidelinesCount = cropArea.guidelinesCount
-            )
-
-            if (cropArea.edges != null) {
-                cropArea.edges.onDraw(this, croppingUtils.origamiCropRect, colors)
-            }
-        }
-    )
-}
-
-private fun DrawScope.drawBitmap(bitmap: ImageBitmap, canvasSize: Size) {
-    val aspectRatio = bitmap.width.toFloat() / bitmap.height
-    val (targetWidth, targetHeight) = when {
-        canvasSize.width / canvasSize.height > aspectRatio -> {
-            val height = canvasSize.height.toInt()
-            height to (height * aspectRatio).toInt()
-        }
-
-        else -> {
-            val width = canvasSize.width.toInt()
-            width to (width / aspectRatio).toInt()
-        }
+        )
     }
-
-    drawImage(
-        bitmap.scale(targetWidth, targetHeight)
-    )
 }
 
 private fun DrawScope.drawCropArea(

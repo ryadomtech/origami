@@ -16,48 +16,87 @@
 
 package tech.ryadom.origami
 
-import androidx.compose.ui.graphics.Canvas
+import androidx.compose.runtime.State
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import tech.ryadom.origami.style.OrigamiCropArea
+import tech.ryadom.origami.util.BitmapSource
+import tech.ryadom.origami.util.OrigamiCropRect
 import tech.ryadom.origami.util.OrigamiCroppingUtils
+import tech.ryadom.origami.util.OrigamiSource
+import tech.ryadom.origami.util.PainterSource
 
 /**
  * Origami [ImageBitmap] and [OrigamiCroppingUtils] state holder
  *
- * @param imageBitmap image bitmap
+ * @param source image source
+ * @see [OrigamiSource]
  */
 class Origami(
-    val imageBitmap: ImageBitmap
+    val source: OrigamiSource
 ) {
 
-    constructor(painter: Painter, density: Density, layoutDirection: LayoutDirection) : this(
-        imageBitmap = painter.toImageBitmap(density, layoutDirection)
-    )
-
-    lateinit var origamiCroppingUtils: OrigamiCroppingUtils
+    /**
+     * [OrigamiCroppingUtils] for manage state of crop area
+     */
+    private var origamiCroppingUtils: OrigamiCroppingUtils? = null
 
     /**
-     * Cropping [imageBitmap] to crop area
-     * @return cropped [imageBitmap]
+     * Function to prepare origami instance to work
+     * @param cropArea [OrigamiCropArea]
+     */
+    fun prepare(cropArea: OrigamiCropArea): State<OrigamiCropRect> {
+        origamiCroppingUtils = OrigamiCroppingUtils(cropArea.aspectRatio)
+        return origamiCroppingUtils!!.origamiCropRect
+    }
+
+    /**
+     * Cropping [source] to crop area
+     * @return cropped [source]
      */
     fun crop(): ImageBitmap {
-        return origamiCroppingUtils.cropImage(imageBitmap)
-    }
-}
-
-fun Painter.toImageBitmap(
-    density: Density,
-    layoutDirection: LayoutDirection
-): ImageBitmap {
-    val bitmap = ImageBitmap(intrinsicSize.width.toInt(), intrinsicSize.height.toInt())
-    val canvas = Canvas(bitmap)
-
-    CanvasDrawScope().draw(density, layoutDirection, canvas, intrinsicSize) {
-        draw(intrinsicSize)
+        requireNotNull(origamiCroppingUtils) { "Origami.prepare() not called!" }
+        return origamiCroppingUtils!!.cropImage(
+            source.getImageBitmap()
+        )
     }
 
-    return bitmap
+    fun onCanvasSizeChanged(intSize: IntSize) {
+        origamiCroppingUtils?.onCanvasSizeChanged(intSize)
+    }
+
+    fun onDragStart(touchPoint: Offset) {
+        origamiCroppingUtils?.onDragStart(touchPoint)
+    }
+
+    fun onDrag(dragPoint: Offset) {
+        origamiCroppingUtils?.onDrag(dragPoint)
+    }
+
+    fun onDragEnd() {
+        origamiCroppingUtils?.onDragEnd()
+    }
+
+    companion object {
+
+        fun of(imageBitmap: ImageBitmap): Origami {
+            return Origami(
+                source = BitmapSource(imageBitmap)
+            )
+        }
+
+        fun of(painter: Painter, density: Density, layoutDirection: LayoutDirection): Origami {
+            return Origami(
+                source = PainterSource(
+                    painter = painter,
+                    density = density,
+                    layoutDirection = layoutDirection
+                )
+            )
+        }
+    }
 }

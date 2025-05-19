@@ -10,8 +10,7 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(17)
-    jvm()
+    jvm("desktop")
 
     js(IR) {
         nodejs()
@@ -43,7 +42,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "origami"
+            baseName = "ComposeApp"
             isStatic = true
         }
     }
@@ -53,6 +52,8 @@ kotlin {
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.ui)
+
+            implementation("co.touchlab:kermit:2.0.4")
         }
     }
 }
