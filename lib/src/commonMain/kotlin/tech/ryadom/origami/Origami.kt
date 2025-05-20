@@ -18,6 +18,7 @@ package tech.ryadom.origami
 
 import androidx.compose.runtime.State
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.Density
@@ -25,7 +26,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import tech.ryadom.origami.style.OrigamiCropArea
 import tech.ryadom.origami.util.BitmapSource
-import tech.ryadom.origami.util.OrigamiCropRect
 import tech.ryadom.origami.util.OrigamiCroppingUtils
 import tech.ryadom.origami.util.OrigamiSource
 import tech.ryadom.origami.util.PainterSource
@@ -33,62 +33,89 @@ import tech.ryadom.origami.util.PainterSource
 /**
  * Origami [ImageBitmap] and [OrigamiCroppingUtils] state holder
  *
- * @param source image source
- * @see [OrigamiSource]
+ * @param source image [OrigamiSource]
  */
 class Origami(
-    val source: OrigamiSource
+    internal val source: OrigamiSource
 ) {
 
     /**
      * [OrigamiCroppingUtils] for manage state of crop area
      */
-    private var origamiCroppingUtils: OrigamiCroppingUtils? = null
-
-    /**
-     * Function to prepare origami instance to work
-     * @param cropArea [OrigamiCropArea]
-     */
-    fun prepare(cropArea: OrigamiCropArea): State<OrigamiCropRect> {
-        origamiCroppingUtils = OrigamiCroppingUtils(cropArea.aspectRatio)
-        return origamiCroppingUtils!!.origamiCropRect
-    }
+    private lateinit var origamiCroppingUtils: OrigamiCroppingUtils
 
     /**
      * Cropping [source] to crop area
      * @return cropped [source]
      */
     fun crop(): ImageBitmap {
-        requireNotNull(origamiCroppingUtils) { "Origami.prepare() not called!" }
-        return origamiCroppingUtils!!.cropImage(
+        return origamiCroppingUtils.cropImage(
             source.getImageBitmap()
         )
     }
 
-    fun onCanvasSizeChanged(intSize: IntSize) {
-        origamiCroppingUtils?.onCanvasSizeChanged(intSize)
+    /**
+     * Function to prepare origami instance to work
+     * @param cropArea [OrigamiCropArea]
+     * @return origami crop rectangle [Rect]
+     */
+    internal fun prepare(cropArea: OrigamiCropArea): State<Rect> {
+        origamiCroppingUtils = OrigamiCroppingUtils(cropArea.aspectRatio)
+        return origamiCroppingUtils.origamiCropRect
     }
 
-    fun onDragStart(touchPoint: Offset) {
-        origamiCroppingUtils?.onDragStart(touchPoint)
+    /**
+     * Image globally positioned callback
+     * @param size new size
+     * @param topLeft top left [Offset]
+     */
+    internal fun onGloballyPositioned(topLeft: Offset, size: IntSize) {
+        origamiCroppingUtils.onGloballyPositioned(topLeft, size)
     }
 
-    fun onDrag(dragPoint: Offset) {
-        origamiCroppingUtils?.onDrag(dragPoint)
+    /**
+     * Dragging start callback
+     * @param touchPoint initial point
+     */
+    internal fun onDragStart(touchPoint: Offset) {
+        origamiCroppingUtils.onDragStart(touchPoint)
     }
 
-    fun onDragEnd() {
-        origamiCroppingUtils?.onDragEnd()
+    /**
+     * Dragging callback
+     * @param dragPoint drag point
+     */
+    internal fun onDrag(dragPoint: Offset) {
+        origamiCroppingUtils.onDrag(dragPoint)
+    }
+
+    /**
+     * Dragging end callback
+     */
+    internal fun onDragEnd() {
+        origamiCroppingUtils.onDragEnd()
     }
 
     companion object {
 
+        /**
+         * Creates instance of [Origami] with [BitmapSource]
+         * @param imageBitmap initial bitmap
+         * @see [OrigamiSource]
+         */
         fun of(imageBitmap: ImageBitmap): Origami {
             return Origami(
                 source = BitmapSource(imageBitmap)
             )
         }
 
+        /**
+         * Creates instance of [Origami] with [PainterSource]
+         * @param painter your [Painter]
+         * @param density your [Density]
+         * @param layoutDirection your [LayoutDirection]
+         * @see [OrigamiSource]
+         */
         fun of(painter: Painter, density: Density, layoutDirection: LayoutDirection): Origami {
             return Origami(
                 source = PainterSource(

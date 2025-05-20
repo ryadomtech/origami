@@ -23,9 +23,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -33,12 +35,12 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import tech.ryadom.origami.style.OrigamiColors
 import tech.ryadom.origami.style.OrigamiCropArea
-import tech.ryadom.origami.util.OrigamiCropRect
 
 /**
  * Composable for origami cropping component
@@ -51,20 +53,25 @@ import tech.ryadom.origami.util.OrigamiCropRect
 fun OrigamiImage(
     origami: Origami,
     modifier: Modifier = Modifier,
-    colors: OrigamiColors = OrigamiColors.defaults(),
+    colors: OrigamiColors = OrigamiColors.createDefault(),
     cropArea: OrigamiCropArea = OrigamiCropArea()
 ) {
-    val origamiCropRect by remember { origami.prepare(cropArea) }
+    // State of crop rect.
+    val origamiCropRect by rememberSaveable { origami.prepare(cropArea) }
 
     Box(
         modifier = modifier.fillMaxSize()
-            .onSizeChanged { intSize ->
-                origami.onCanvasSizeChanged(intSize = intSize)
-            }
     ) {
+        // Draw image source
         origami.source.Content(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
                 .align(Alignment.Center)
+                .onGloballyPositioned {
+                    origami.onGloballyPositioned(
+                        size = it.size,
+                        topLeft = it.positionInParent()
+                    )
+                }
         )
 
         Canvas(
@@ -87,6 +94,7 @@ fun OrigamiImage(
                     )
                 },
             onDraw = {
+                // Draw background
                 clipPath(
                     path = cropArea.highlightedShape.getPath(origamiCropRect),
                     clipOp = ClipOp.Difference
@@ -96,6 +104,7 @@ fun OrigamiImage(
                     )
                 }
 
+                // Draw crop area
                 drawCropArea(
                     guidelinesColor = colors.guidelinesColor,
                     guidelinesWidth = cropArea.guidelinesWidth,
@@ -103,6 +112,7 @@ fun OrigamiImage(
                     guidelinesCount = cropArea.guidelinesCount
                 )
 
+                // Draw edges if necessary
                 if (cropArea.edges != null) {
                     cropArea.edges.onDraw(this, origamiCropRect, colors)
                 }
@@ -111,34 +121,57 @@ fun OrigamiImage(
     }
 }
 
+/**
+ * Drawing crop area
+ * @param guidelinesColor guidelines color
+ * @param guidelinesWidth guidelines width
+ * @param guidelinesCount guidelines count
+ * @param origamiCropRect [Rect]
+ *
+ * @see [OrigamiCropArea]
+ */
 private fun DrawScope.drawCropArea(
     guidelinesColor: Color,
     guidelinesWidth: Dp,
     guidelinesCount: Int,
-    origamiCropRect: OrigamiCropRect
+    origamiCropRect: Rect
 ) = with(origamiCropRect) {
+    val guidelinesWidthPx = guidelinesWidth.toPx()
     drawRect(
         color = guidelinesColor,
         topLeft = topLeft,
         size = size,
-        style = Stroke(guidelinesWidth.toPx())
+        style = Stroke(width = guidelinesWidthPx)
     )
 
-    if (guidelinesWidth > 0.dp && guidelinesCount > 0) {
-        drawGuidelines(
-            guidelinesCount = guidelinesCount,
-            guidelinesColor = guidelinesColor,
-            guidelinesWidth = guidelinesWidth,
-            origamiCropRect = origamiCropRect
-        )
+    // Not drawing invisible guidelines
+    if (guidelinesWidthPx <= 0 || guidelinesCount <= 0 || guidelinesColor == Color.Transparent) {
+        return@with
     }
+
+    drawGuidelines(
+        guidelinesCount = guidelinesCount,
+        guidelinesColor = guidelinesColor,
+        guidelinesWidth = guidelinesWidth,
+        origamiCropRect = origamiCropRect
+    )
 }
 
+/**
+ * Drawing guidelines inside crop area
+ * @param guidelinesColor guidelines color
+ * @param guidelinesWidth guidelines width
+ * @param guidelinesCount guidelines count
+ * @param origamiCropRect [Rect]
+ *
+ * @see drawCropArea
+ * @see [OrigamiCropArea]
+ */
 private fun DrawScope.drawGuidelines(
     guidelinesCount: Int,
     guidelinesColor: Color,
     guidelinesWidth: Dp,
-    origamiCropRect: OrigamiCropRect
+    origamiCropRect: Rect
 ) = with(origamiCropRect) {
     val strokeWidth = guidelinesWidth.toPx()
 

@@ -16,9 +16,9 @@
 
 package tech.ryadom.origami.util
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.IntRect
@@ -26,124 +26,133 @@ import androidx.compose.ui.unit.IntSize
 import co.touchlab.kermit.Logger
 import tech.ryadom.origami.style.OrigamiAspectRatio
 import tech.ryadom.origami.util.extensions.crop
-import tech.ryadom.origami.util.extensions.scale
+import tech.ryadom.origami.util.extensions.findEdgeContaining
+import tech.ryadom.origami.util.extensions.offset
 
-class OrigamiCroppingUtils(
+/**
+ * Origami cropping utils
+ * @param aspectRatio [OrigamiAspectRatio]
+ */
+internal class OrigamiCroppingUtils(
     private val aspectRatio: OrigamiAspectRatio
 ) {
 
-    private var canvasSize: Size = Size.Zero
-    var origamiCropRect: MutableState<OrigamiCropRect> = mutableStateOf(OrigamiCropRect())
-        private set
+    internal val origamiCropRect = mutableStateOf(Rect.Zero)
 
-    private var touchRect: OrigamiCropRect = OrigamiCropRect()
-    private var isTouchedInsideRectMove: Boolean = false
-    private var edgesTouched: Edges? = null
-    private var iRectTopLeft: Offset = Offset.Zero
-    private var lastPointUpdated: Offset? = null
+    private var sourceSize: Size = Size.Zero
+    private var touchRect: Rect = Rect.Zero
 
-    private val minLimit: Float = PADDING_FOR_TOUCH_RECT * MIN_LIMIT_MULTIPLIER
+    private var isTouchedInsideRect: Boolean = false
+    private var edgeTouched: Edge? = null
+    private var origamiRectTopLeft: Offset = Offset.Zero
+
+    private var lastPointTouched: Offset? = null
+
     private var maxSquareLimit: Float = 0f
     private var minSquareLimit: Float = 0f
 
-    init {
-        resetCropRect()
-    }
-
-    /**
-     * Should be called when canvas changed size
-     * @param intSize new canvas size
-     */
-    fun onCanvasSizeChanged(intSize: IntSize) {
-        canvasSize = Size(
-            width = intSize.width.toFloat(),
-            height = intSize.height.toFloat()
+    internal fun onGloballyPositioned(topLeft: Offset, size: IntSize) {
+        sourceSize = Size(
+            width = size.width.toFloat(),
+            height = size.height.toFloat()
         )
 
-        resetCropRect()
+        resetCropRect(topLeft)
     }
 
-    fun onDragStart(touchPoint: Offset) {
-        isTouchedInsideRectMove = touchRect.contains(touchPoint)
-        edgesTouched = origamiCropRect.value.getEdgeContaining(touchPoint, minLimit)
-            .takeIf { !isTouchedInsideRectMove }
-        lastPointUpdated = touchPoint
+    internal fun onDragStart(touchPoint: Offset) {
+        isTouchedInsideRect = touchRect.contains(touchPoint)
 
-        Logger.i { "Drag started $touchPoint $isTouchedInsideRectMove $edgesTouched" }
-    }
-
-    fun onDrag(dragPoint: Offset) {
-        lastPointUpdated?.let { lastPoint ->
-            when {
-                isTouchedInsideRectMove -> handleRectDrag(dragPoint)
-                edgesTouched != null -> handleEdgeDrag(dragPoint, lastPoint)
-            }
-
-            lastPointUpdated = dragPoint
+        if (!isTouchedInsideRect) {
+            edgeTouched = origamiCropRect.value.findEdgeContaining(
+                point = touchPoint,
+                tolerance = MIN_PADDING_FOR_TOUCH_RECT
+            )
         }
 
+        lastPointTouched = touchPoint
 
-        Logger.i { "On drag  $dragPoint $isTouchedInsideRectMove $edgesTouched" }
+        Logger.i { "Drag started $touchPoint $isTouchedInsideRect $edgeTouched" }
     }
 
-    fun onDragEnd() {
-        isTouchedInsideRectMove = false
-        edgesTouched = null
-        lastPointUpdated = null
+    internal fun onDrag(dragPoint: Offset) {
+        lastPointTouched?.let { lastPoint ->
+            when {
+                isTouchedInsideRect -> {
+                    handleRectDrag(dragPoint)
+                }
+
+                edgeTouched != null -> {
+                    handleEdgeDrag(dragPoint, lastPoint)
+                }
+            }
+
+            lastPointTouched = dragPoint
+        }
+
+        Logger.i { "On drag  $dragPoint $isTouchedInsideRect $edgeTouched" }
+    }
+
+    internal fun onDragEnd() {
+        isTouchedInsideRect = false
+        edgeTouched = null
+        lastPointTouched = null
 
         Logger.i { "On drag end" }
     }
 
-    /**
-     * Resets the crop rect to canvas size
-     */
-    private fun resetCropRect() {
-        with(canvasSize) {
+    private fun resetCropRect(topLeft: Offset) {
+        with(sourceSize) {
             if (aspectRatio.isVariable) {
-                setupFreeStyleRect(width, height)
+                setupFreeStyleRect(topLeft, width, height)
             } else {
-                setupSquareRect(width, height)
+                setupSquareRect(topLeft, width, height)
             }
         }
 
         updateTouchRect()
     }
 
-    private fun setupSquareRect(width: Float, height: Float) {
+    private fun setupSquareRect(topLeft: Offset, width: Float, height: Float) {
         val minRectSide = minOf(width, height)
 
         maxSquareLimit = minRectSide
         minSquareLimit = maxSquareLimit * 0.3f
 
-        val squareSize = minRectSide - SIZE_REDUCTION
+        val squareSize = minRectSide * 0.8f
 
-        iRectTopLeft = calculateSquarePosition(width, height, squareSize)
-        origamiCropRect.value = OrigamiCropRect(
-            topLeft = iRectTopLeft,
+        origamiRectTopLeft = calculateSquarePosition(topLeft, width, height, squareSize)
+        origamiCropRect.value = Rect(
+            offset = origamiRectTopLeft,
             size = Size(squareSize, squareSize)
         )
     }
 
-    private fun setupFreeStyleRect(width: Float, height: Float) {
-        iRectTopLeft = Offset.Zero
-        origamiCropRect.value = OrigamiCropRect(
-            topLeft = iRectTopLeft,
+    private fun setupFreeStyleRect(topLeft: Offset, width: Float, height: Float) {
+        origamiRectTopLeft = topLeft
+        origamiCropRect.value = Rect(
+            offset = origamiRectTopLeft,
             size = Size(width, height)
         )
     }
 
-    private fun calculateSquarePosition(width: Float, height: Float, squareSize: Float): Offset {
+    private fun calculateSquarePosition(
+        topLeft: Offset,
+        width: Float,
+        height: Float,
+        squareSize: Float
+    ): Offset {
         return Offset(
-            x = (width - squareSize) / SQUARE_POSITION_CALCULATION_FACTOR,
-            y = (height - squareSize) / SQUARE_POSITION_CALCULATION_FACTOR
+            x = topLeft.x + ((width - squareSize) / SQUARE_POSITION_CALCULATION_FACTOR),
+            y = topLeft.y + ((height - squareSize) / SQUARE_POSITION_CALCULATION_FACTOR)
         )
     }
 
     private fun updateTouchRect() {
         val insidePadding = PADDING_FOR_TOUCH_RECT * 2
         touchRect = origamiCropRect.value.let {
-            OrigamiCropRect(
-                topLeft = Offset(
+            Rect(
+                offset = Offset(
                     it.topLeft.x + PADDING_FOR_TOUCH_RECT,
                     it.topLeft.y + PADDING_FOR_TOUCH_RECT
                 ),
@@ -157,7 +166,7 @@ class OrigamiCroppingUtils(
 
     private fun handleRectDrag(dragPoint: Offset) {
         calculateDragOffset(dragPoint)?.let { diff ->
-            val newOffset = iRectTopLeft + diff
+            val newOffset = origamiRectTopLeft + diff
             val clampedOffset = clampOffsetToCanvas(newOffset)
             updateIRectTopLeft(clampedOffset)
         }
@@ -165,62 +174,78 @@ class OrigamiCroppingUtils(
 
     private fun handleEdgeDrag(dragPoint: Offset, lastPoint: Offset) {
         val diff = dragPoint - lastPoint
-        when (edgesTouched) {
-            Edges.TopLeft -> handleTopLeftDrag(diff)
-            Edges.TopRight -> handleTopRightDrag(diff)
-            Edges.BottomLeft -> handleBottomLeftDrag(diff)
-            Edges.BottomRight -> handleBottomRightDrag(diff)
+        when (edgeTouched) {
+            Edge.TopLeft -> handleTopLeftDrag(diff)
+            Edge.TopRight -> handleTopRightDrag(diff)
+            Edge.BottomLeft -> handleBottomLeftDrag(diff)
+            Edge.BottomRight -> handleBottomRightDrag(diff)
             else -> Unit
         }
     }
 
     private fun handleTopLeftDrag(diff: Offset) {
-        val newX = (iRectTopLeft.x + diff.x).coerceIn(0f, canvasSize.width - minLimit)
-        val newY = (iRectTopLeft.y + diff.y).coerceIn(0f, canvasSize.height - minLimit)
+        val x = (0f.coerceAtLeast(origamiRectTopLeft.x + diff.x))
+            .coerceAtMost(sourceSize.width - MIN_PADDING_FOR_TOUCH_RECT)
+
+        val y = (0f.coerceAtLeast(origamiRectTopLeft.y + diff.y))
+            .coerceAtMost(sourceSize.height - MIN_PADDING_FOR_TOUCH_RECT)
 
         val newWidth = calculateNewDimension(origamiCropRect.value.size.width, -diff.x)
         val newHeight = calculateNewDimension(origamiCropRect.value.size.height, -diff.y)
 
-        updateRectDimensions(newX, newY, newWidth, newHeight)
+        updateRectDimensions(x, y, newWidth, newHeight)
     }
 
     private fun handleTopRightDrag(diff: Offset) {
         val currentSize = origamiCropRect.value.size
         val newWidth =
-            (currentSize.width + diff.x).coerceIn(minLimit, canvasSize.width - iRectTopLeft.x)
+            (currentSize.width + diff.x).coerceIn(
+                MIN_PADDING_FOR_TOUCH_RECT,
+                sourceSize.width - origamiRectTopLeft.x
+            )
         val newHeight =
-            (currentSize.height - diff.y).coerceIn(minLimit, canvasSize.height - iRectTopLeft.y)
+            (currentSize.height - diff.y).coerceIn(
+                MIN_PADDING_FOR_TOUCH_RECT,
+                sourceSize.height - origamiRectTopLeft.y
+            )
 
         if (aspectRatio.isVariable) {
-            origamiCropRect.value = origamiCropRect.value.copy(size = Size(newWidth, newHeight))
+            origamiCropRect.value = Rect(
+                offset = origamiCropRect.value.offset,
+                size = Size(newWidth, newHeight)
+            )
+
+
         } else {
-            val squareSize = minOf(newWidth, newHeight).coerceAtLeast(minLimit)
+            val squareSize = minOf(newWidth, newHeight).coerceAtLeast(MIN_PADDING_FOR_TOUCH_RECT)
             adjustSquareVerticalPosition(squareSize)
-            origamiCropRect.value = origamiCropRect.value.copy(size = Size(squareSize, squareSize))
+            origamiCropRect.value = Rect(
+                offset = origamiCropRect.value.offset,
+                size = Size(squareSize, squareSize)
+            )
         }
         updateTouchRect()
     }
 
+    // norm
     private fun handleBottomLeftDrag(diff: Offset) {
-        val newX = (iRectTopLeft.x + diff.x).coerceIn(0f, canvasSize.width - minLimit)
-        val newWidth = (origamiCropRect.value.size.width - diff.x).coerceAtLeast(minLimit)
+        val newWidth =
+            (origamiCropRect.value.size.width - diff.x).coerceAtLeast(MIN_PADDING_FOR_TOUCH_RECT)
         val newHeight = (origamiCropRect.value.size.height + diff.y).coerceIn(
-            minLimit,
-            canvasSize.height - iRectTopLeft.y
+            MIN_PADDING_FOR_TOUCH_RECT,
+            sourceSize.height - origamiRectTopLeft.y
         )
 
-        iRectTopLeft = Offset(newX, iRectTopLeft.y)
-
         if (aspectRatio.isVariable) {
-            origamiCropRect.value = origamiCropRect.value.copy(
-                topLeft = iRectTopLeft,
+            origamiCropRect.value = Rect(
+                offset = origamiRectTopLeft,
                 size = Size(newWidth, newHeight)
             )
         } else {
-            val squareSize = minOf(newWidth, newHeight).coerceAtLeast(minLimit)
+            val squareSize = minOf(newWidth, newHeight).coerceAtLeast(MIN_PADDING_FOR_TOUCH_RECT)
             adjustSquareVerticalPosition(squareSize)
-            origamiCropRect.value = origamiCropRect.value.copy(
-                topLeft = iRectTopLeft,
+            origamiCropRect.value = Rect(
+                offset = origamiRectTopLeft,
                 size = Size(squareSize, squareSize)
             )
         }
@@ -229,58 +254,71 @@ class OrigamiCroppingUtils(
 
     private fun handleBottomRightDrag(diff: Offset) {
         val newWidth = (origamiCropRect.value.size.width + diff.x).coerceIn(
-            minLimit,
-            canvasSize.width - iRectTopLeft.x
+            MIN_PADDING_FOR_TOUCH_RECT,
+            sourceSize.width - origamiRectTopLeft.x
         )
         val newHeight = (origamiCropRect.value.size.height + diff.y).coerceIn(
-            minLimit,
-            canvasSize.height - iRectTopLeft.y
+            MIN_PADDING_FOR_TOUCH_RECT,
+            sourceSize.height - origamiRectTopLeft.y
         )
 
         if (aspectRatio.isVariable) {
-            origamiCropRect.value = origamiCropRect.value.copy(size = Size(newWidth, newHeight))
+            origamiCropRect.value = Rect(
+                offset = origamiCropRect.value.offset,
+                size = Size(newWidth, newHeight)
+            )
         } else {
-            val squareSize = minOf(newWidth, newHeight).coerceAtLeast(minLimit)
+            val squareSize = minOf(newWidth, newHeight).coerceAtLeast(MIN_PADDING_FOR_TOUCH_RECT)
             adjustSquareVerticalPosition(squareSize)
-            origamiCropRect.value = origamiCropRect.value.copy(size = Size(squareSize, squareSize))
+            origamiCropRect.value = Rect(
+                offset = origamiCropRect.value.offset,
+                size = Size(squareSize, squareSize)
+            )
         }
         updateTouchRect()
     }
 
     private fun updateRectDimensions(x: Float, y: Float, width: Float, height: Float) {
-        iRectTopLeft = Offset(x, y)
+        origamiRectTopLeft = Offset(x, y)
         val newSize = if (aspectRatio.isVariable) {
-            Size(width.coerceAtLeast(minLimit), height.coerceAtLeast(minLimit))
+            Size(
+                width.coerceAtLeast(MIN_PADDING_FOR_TOUCH_RECT),
+                height.coerceAtLeast(MIN_PADDING_FOR_TOUCH_RECT)
+            )
         } else {
-            val squareSize = minOf(width, height).coerceAtLeast(minLimit)
+            val squareSize = minOf(width, height).coerceAtLeast(MIN_PADDING_FOR_TOUCH_RECT)
             adjustSquareVerticalPosition(squareSize)
             Size(squareSize, squareSize)
         }
-        origamiCropRect.value = origamiCropRect.value.copy(topLeft = iRectTopLeft, size = newSize)
+        origamiCropRect.value = Rect(
+            offset = origamiRectTopLeft,
+            size = newSize
+        )
+
         updateTouchRect()
     }
 
     private fun adjustSquareVerticalPosition(squareSize: Float) {
-        val totalHeight = iRectTopLeft.y + squareSize
-        val heightDiff = canvasSize.height - totalHeight
+        val totalHeight = origamiRectTopLeft.y + squareSize
+        val heightDiff = sourceSize.height - totalHeight
         if (heightDiff < 0) {
-            iRectTopLeft = iRectTopLeft.copy(y = iRectTopLeft.y + heightDiff)
+            origamiRectTopLeft = origamiRectTopLeft.copy(y = origamiRectTopLeft.y + heightDiff)
         }
     }
 
     private fun calculateNewDimension(current: Float, diff: Float): Float {
-        return (current + diff).coerceIn(minLimit, canvasSize.width)
+        return (current + diff).coerceIn(MIN_PADDING_FOR_TOUCH_RECT, sourceSize.width)
     }
 
     private fun calculateDragOffset(newPoint: Offset): Offset? {
-        return lastPointUpdated?.let {
+        return lastPointTouched?.let {
             Offset(newPoint.x - it.x, newPoint.y - it.y)
         }
     }
 
     private fun clampOffsetToCanvas(offset: Offset): Offset {
-        val maxX = canvasSize.width - origamiCropRect.value.size.width
-        val maxY = canvasSize.height - origamiCropRect.value.size.height
+        val maxX = sourceSize.width - origamiCropRect.value.size.width
+        val maxY = sourceSize.height - origamiCropRect.value.size.height
         return Offset(
             offset.x.coerceIn(0f, maxX),
             offset.y.coerceIn(0f, maxY)
@@ -288,51 +326,43 @@ class OrigamiCroppingUtils(
     }
 
     private fun updateIRectTopLeft(newOffset: Offset) {
-        iRectTopLeft = newOffset
-        origamiCropRect.value = origamiCropRect.value.copy(topLeft = newOffset)
+        origamiRectTopLeft = newOffset
+        origamiCropRect.value = Rect(offset = newOffset, size = origamiCropRect.value.size)
         updateTouchRect()
     }
 
     fun cropImage(bitmapImage: ImageBitmap): ImageBitmap {
-        if (canvasSize.isEmpty()) return bitmapImage
-
-        return bitmapImage.scaleToCanvas()
+        return bitmapImage
             .cropToRect(getCropRect())
-            .scaleToFinalSize()
+        // .scaleToFinalSize()
     }
 
-    private fun ImageBitmap.scaleToCanvas() =
-        scale(canvasSize.width.toInt(), canvasSize.height.toInt())
+    private fun ImageBitmap.scaleToCanvas() = this
 
     private fun getCropRect(): IntRect {
         with(origamiCropRect.value) {
+            Logger.i("ree $topLeft $origamiRectTopLeft ${size.width} ${size.height}")
             return IntRect(
-                left = topLeft.x.toInt(),
-                top = topLeft.y.toInt(),
-                right = (topLeft.x + size.width).toInt(),
-                bottom = (topLeft.y + size.height).toInt()
+                left = topLeft.x.toInt() - origamiRectTopLeft.x.toInt(),
+                top = topLeft.y.toInt() - origamiRectTopLeft.y.toInt(),
+                right = (topLeft.x + size.width).toInt() - origamiRectTopLeft.x.toInt(),
+                bottom = (topLeft.y + size.height).toInt() - origamiRectTopLeft.y.toInt()
             ).coerceInCanvasBounds()
         }
     }
 
     private fun IntRect.coerceInCanvasBounds(): IntRect {
+        Logger.i("before corcing $this")
         val clampedLeft = left.coerceAtLeast(0)
         val clampedTop = top.coerceAtLeast(0)
-        val clampedRight = right.coerceAtMost(canvasSize.width.toInt())
-        val clampedBottom = bottom.coerceAtMost(canvasSize.height.toInt())
+        val clampedRight = right.coerceAtMost(sourceSize.width.toInt())
+        val clampedBottom = bottom.coerceAtMost(sourceSize.height.toInt())
         return IntRect(clampedLeft, clampedTop, clampedRight, clampedBottom)
     }
 
     private fun ImageBitmap.cropToRect(rect: IntRect): ImageBitmap {
+        Logger.i("crop rect $rect")
         return if (rect.width > 0 && rect.height > 0) crop(rect) else this
-    }
-
-    private fun ImageBitmap.scaleToFinalSize(): ImageBitmap {
-        return if (!aspectRatio.isVariable) {
-            scale(maxSquareLimit.toInt(), maxSquareLimit.toInt())
-        } else {
-            this
-        }
     }
 
     companion object {
@@ -340,5 +370,7 @@ class OrigamiCroppingUtils(
         private const val MIN_LIMIT_MULTIPLIER = 3f
         private const val SIZE_REDUCTION = 100f
         private const val SQUARE_POSITION_CALCULATION_FACTOR = 2f
+
+        private const val MIN_PADDING_FOR_TOUCH_RECT = PADDING_FOR_TOUCH_RECT * MIN_LIMIT_MULTIPLIER
     }
 }
