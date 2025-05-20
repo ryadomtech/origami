@@ -19,7 +19,6 @@ package tech.ryadom.origami.style
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -41,17 +40,7 @@ fun interface OrigamiHighlightedShape {
      */
     object Default : OrigamiHighlightedShape {
         override fun getPath(rect: Rect): Path {
-            return Path().apply {
-                addRect(
-                    Rect(
-                        offset = rect.topLeft,
-                        size = Size(
-                            width = rect.size.width,
-                            height = rect.size.height
-                        )
-                    )
-                )
-            }
+            return Path().apply { addRect(rect) }
         }
     }
 
@@ -60,17 +49,7 @@ fun interface OrigamiHighlightedShape {
      */
     object Circle : OrigamiHighlightedShape {
         override fun getPath(rect: Rect): Path {
-            return Path().apply {
-                addOval(
-                    Rect(
-                        offset = rect.topLeft,
-                        size = Size(
-                            width = rect.size.width,
-                            height = rect.size.height
-                        )
-                    )
-                )
-            }
+            return Path().apply { addOval(rect) }
         }
     }
 
@@ -95,13 +74,7 @@ fun interface OrigamiHighlightedShape {
             return Path().apply {
                 addRoundRect(
                     RoundRect(
-                        rect = Rect(
-                            offset = rect.topLeft,
-                            size = Size(
-                                width = rect.size.width,
-                                height = rect.size.height
-                            )
-                        ),
+                        rect = rect,
                         cornerRadius = cornerRadius
                     )
                 )
