@@ -19,19 +19,19 @@ In your shared module's build.gradle.kts add
 
 ```Gradle Kotlin DSL
 kotlin.sourceSets.commonMain.dependencies {
-  implementation("tech.ryadom:origami:0.0.2")
+  implementation("tech.ryadom:origami:0.0.3")
 }
 ```
 
 ### Usage
 
-To create an `Origami` instance, you must call the constructor and pass an
-`ImageBitmap`, `Uri`, `File`, or `Painter` as an arguments.
+To create an `Origami` instance, you must call the `Origami.of()` funcation and pass an
+`ImageBitmap` or `Painter` as an arguments.
 Then use the `Origami` object as shown below.
 
 ```Kotlin
-val source = ImageBitmap() // Implement your bitmap here
-val origami = remember { Origami(source) }
+val source = createYourSource()
+val origami = Origami.of(source)
 
 OrigamiImage(
   origami = origami,
@@ -39,6 +39,7 @@ OrigamiImage(
   cropArea = OrigamiCropArea() // Customize crop area here
 )
 
+// Returns cropped image
 origami.crop()
 ```
 
