@@ -43,6 +43,39 @@ OrigamiImage(
 origami.crop()
 ```
 
+### Customization
+#### 1. Colors
+Via `OrigamiColors` you can customize `backgroundColor`, `guidelinesColor` and `edgesColor`
+
+```Kotlin
+interface OrigamiColors {
+    val backgroundColor: Color
+
+    val guidelinesColor: Color
+
+    val edgesColor: Color
+}
+```
+
+#### 2. Crop area
+Via `OrigamiCropArea` you can customize your crop area: 
+
+2.1. Guidelines count and width 
+
+2.2. Edges shape via `OrigamiEdges`. You can use default `Circle` or `Rectangle` shape or create your own using `DrawScope`
+2.3. Hihglighted area shape via `OrigamiHighlightedShape`. You can use `Circle`, `Rectangle` (Default) or `RoundedRectangle` defaults or create your own shape. 
+2.4. Aspect ratio (free style movement or keeping aspect ratio) via `OrigamiAspectRatio`.
+
+```Kotlin
+data class OrigamiCropArea(
+    val aspectRatio: OrigamiAspectRatio = OrigamiAspectRatio(),
+    val highlightedShape: OrigamiHighlightedShape = OrigamiHighlightedShape.Default,
+    val edges: OrigamiEdges? = OrigamiEdges.Circle(6.dp),
+    val guidelinesWidth: Dp = 2.dp,
+    val guidelinesCount: Int = 2
+)
+```
+
 ### License
 
 ```
