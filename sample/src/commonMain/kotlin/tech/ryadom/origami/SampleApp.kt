@@ -3,6 +3,7 @@ package tech.ryadom.origami
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,11 +31,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import origami.sample.generated.resources.Res
 import origami.sample.generated.resources.sample
+import tech.ryadom.origami.style.OrigamiAspectRatio
+import tech.ryadom.origami.style.OrigamiCropArea
+import tech.ryadom.origami.style.OrigamiHighlightedShape
 
 @Composable
 fun SampleApp() {
@@ -57,7 +62,11 @@ fun SampleApp() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "The result is below")
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = "The result is below!\nClick on image to reset",
+                textAlign = TextAlign.Center
+            )
 
             Box(
                 modifier = Modifier.size(250.dp)
@@ -66,6 +75,9 @@ fun SampleApp() {
                         width = 1.dp,
                         color = Color.LightGray
                     )
+                    .clickable {
+                        croppedImage = null
+                    }
             ) {
                 Image(
                     modifier = Modifier.align(Alignment.Center)
@@ -81,10 +93,10 @@ fun SampleApp() {
 
     Scaffold(
         modifier = Modifier.fillMaxSize()
+            .background(Color.Black.copy(0.7f))
             .windowInsetsPadding(
                 WindowInsets.systemBars
             ),
-        containerColor = Color.DarkGray,
         bottomBar = {
             Button(
                 modifier = Modifier.fillMaxWidth()
@@ -107,7 +119,11 @@ fun SampleApp() {
         OrigamiImage(
             origami = origami,
             modifier = Modifier.fillMaxSize()
-                .padding(it)
+                .padding(it),
+            cropArea = OrigamiCropArea(
+                highlightedShape = OrigamiHighlightedShape.Circle,
+                aspectRatio = OrigamiAspectRatio(isVariable = false)
+            )
         )
     }
 }

@@ -33,7 +33,7 @@ kotlin {
             }
         }
 
-        publishLibraryVariants("release", "debug")
+        publishLibraryVariants("release")
     }
 
     listOf(
@@ -52,8 +52,6 @@ kotlin {
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.ui)
-
-            implementation("co.touchlab:kermit:2.0.4")
         }
     }
 }
@@ -80,7 +78,7 @@ mavenPublishing {
     coordinates(
         groupId = "tech.ryadom",
         artifactId = "origami",
-        version = "0.0.2"
+        version = "0.0.3"
     )
 
     pom {

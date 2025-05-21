@@ -37,7 +37,7 @@ interface OrigamiColors {
          * Default values for [OrigamiColors]
          */
         fun createDefault() = object : OrigamiColors {
-            override val backgroundColor: Color = Color.Black.copy(alpha = 0.5F)
+            override val backgroundColor: Color = Color.Black.copy(alpha = 0.7F)
 
             override val guidelinesColor: Color = Color.Gray
 

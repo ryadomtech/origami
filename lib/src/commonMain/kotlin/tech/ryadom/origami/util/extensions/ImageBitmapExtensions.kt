@@ -46,23 +46,3 @@ internal fun ImageBitmap.crop(rect: IntRect): ImageBitmap {
         )
     }
 }
-
-/**
- * Scaling [ImageBitmap] to given new width and new height.
- *
- * @param newWidth new width
- * @param newHeight new... height. Are you surprised?
- *
- * @return [ImageBitmap] copy, scaled to given new width and new height
- */
-internal fun ImageBitmap.scale(newWidth: Int, newHeight: Int): ImageBitmap {
-    return ImageBitmap(newWidth, newHeight).apply {
-        val canvas = Canvas(this)
-        canvas.drawImageRect(
-            image = this@scale,
-            srcSize = IntSize(this@scale.width, this@scale.height),
-            dstSize = IntSize(newWidth, newHeight),
-            paint = Paint()
-        )
-    }
-}

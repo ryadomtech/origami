@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,9 +37,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.unit.Dp
-import co.touchlab.kermit.Logger
 import tech.ryadom.origami.style.OrigamiColors
 import tech.ryadom.origami.style.OrigamiCropArea
+import tech.ryadom.origami.util.extensions.RectStateSaver
 
 /**
  * Composable for origami cropping component
@@ -57,7 +56,9 @@ fun OrigamiImage(
     cropArea: OrigamiCropArea = OrigamiCropArea()
 ) {
     // State of crop rect.
-    val origamiCropRect by rememberSaveable { origami.prepare(cropArea) }
+    val origamiCropRect by rememberSaveable(saver = RectStateSaver()) {
+        origami.prepare(cropArea)
+    }
 
     Box(
         modifier = modifier.fillMaxSize()

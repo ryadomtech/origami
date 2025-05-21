@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import tech.ryadom.origami.Origami
 
 /**
  * [Origami] image source
