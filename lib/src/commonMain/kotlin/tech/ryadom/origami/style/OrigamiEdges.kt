@@ -18,12 +18,12 @@ package tech.ryadom.origami.style
 
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.util.fastForEach
-import tech.ryadom.origami.util.OrigamiCropRect
 
 /**
  * Origami edges
@@ -33,10 +33,10 @@ fun interface OrigamiEdges {
     /**
      * Callback for drawing
      * @param scope current [DrawScope]
-     * @param rect current [OrigamiCropRect] of [OrigamiCropArea]
+     * @param rect current [Rect] of [OrigamiCropArea]
      * @param colors current [OrigamiColors]
      */
-    fun onDraw(scope: DrawScope, rect: OrigamiCropRect, colors: OrigamiColors)
+    fun onDraw(scope: DrawScope, rect: Rect, colors: OrigamiColors)
 
     /**
      * Circle edges shape
@@ -46,7 +46,7 @@ fun interface OrigamiEdges {
     class Circle(
         private val radius: Dp
     ) : OrigamiEdges {
-        override fun onDraw(scope: DrawScope, rect: OrigamiCropRect, colors: OrigamiColors) {
+        override fun onDraw(scope: DrawScope, rect: Rect, colors: OrigamiColors) {
             with(scope) {
                 val edges = listOf(
                     rect.topLeft,
@@ -84,7 +84,7 @@ fun interface OrigamiEdges {
         private val size: DpSize,
         private val cornerRadius: Dp
     ) : OrigamiEdges {
-        override fun onDraw(scope: DrawScope, rect: OrigamiCropRect, colors: OrigamiColors) {
+        override fun onDraw(scope: DrawScope, rect: Rect, colors: OrigamiColors) {
             with(scope) {
                 val height = this@Rectangle.size.height.toPx()
                 val width = this@Rectangle.size.width.toPx()

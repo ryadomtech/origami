@@ -19,11 +19,9 @@ package tech.ryadom.origami.style
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
-import tech.ryadom.origami.util.OrigamiCropRect
 
 /**
  * Shape of the highlighted space inside crop area
@@ -32,27 +30,17 @@ fun interface OrigamiHighlightedShape {
 
     /**
      * Provides path to shape
-     * @param rect current [OrigamiCropRect]
+     * @param rect current [Rect]
      * @return path will be drawn
      */
-    fun getPath(rect: OrigamiCropRect): Path
+    fun getPath(rect: Rect): Path
 
     /**
      * Default rectangle shape match rect edges
      */
     object Default : OrigamiHighlightedShape {
-        override fun getPath(rect: OrigamiCropRect): Path {
-            return Path().apply {
-                addRect(
-                    Rect(
-                        offset = rect.topLeft,
-                        size = Size(
-                            width = rect.size.width,
-                            height = rect.size.height
-                        )
-                    )
-                )
-            }
+        override fun getPath(rect: Rect): Path {
+            return Path().apply { addRect(rect) }
         }
     }
 
@@ -60,18 +48,8 @@ fun interface OrigamiHighlightedShape {
      * Circle shape match rect edges
      */
     object Circle : OrigamiHighlightedShape {
-        override fun getPath(rect: OrigamiCropRect): Path {
-            return Path().apply {
-                addOval(
-                    Rect(
-                        offset = rect.topLeft,
-                        size = Size(
-                            width = rect.size.width,
-                            height = rect.size.height
-                        )
-                    )
-                )
-            }
+        override fun getPath(rect: Rect): Path {
+            return Path().apply { addOval(rect) }
         }
     }
 
@@ -92,17 +70,11 @@ fun interface OrigamiHighlightedShape {
             }
         )
 
-        override fun getPath(rect: OrigamiCropRect): Path {
+        override fun getPath(rect: Rect): Path {
             return Path().apply {
                 addRoundRect(
                     RoundRect(
-                        rect = Rect(
-                            offset = rect.topLeft,
-                            size = Size(
-                                width = rect.size.width,
-                                height = rect.size.height
-                            )
-                        ),
+                        rect = rect,
                         cornerRadius = cornerRadius
                     )
                 )

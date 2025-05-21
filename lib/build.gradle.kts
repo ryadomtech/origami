@@ -10,8 +10,7 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(17)
-    jvm()
+    jvm("desktop")
 
     js(IR) {
         nodejs()
@@ -34,7 +33,7 @@ kotlin {
             }
         }
 
-        publishLibraryVariants("release", "debug")
+        publishLibraryVariants("release")
     }
 
     listOf(
@@ -43,7 +42,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "origami"
+            baseName = "ComposeApp"
             isStatic = true
         }
     }
@@ -79,7 +78,7 @@ mavenPublishing {
     coordinates(
         groupId = "tech.ryadom",
         artifactId = "origami",
-        version = "0.0.2"
+        version = "0.0.3"
     )
 
     pom {

@@ -19,7 +19,7 @@ package tech.ryadom.origami.util
 /**
  * Edges of crop area
  */
-enum class Edges {
+internal enum class Edge {
 
     /**
      * Top left edge

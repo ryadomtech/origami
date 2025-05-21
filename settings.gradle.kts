@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "origami"
 include(":lib")
+include(":sample")

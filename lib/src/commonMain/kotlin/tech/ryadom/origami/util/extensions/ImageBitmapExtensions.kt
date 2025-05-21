@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.IntSize
  *
  * @return [ImageBitmap] copy, cropped to given rect
  */
-fun ImageBitmap.crop(rect: IntRect): ImageBitmap {
+internal fun ImageBitmap.crop(rect: IntRect): ImageBitmap {
     require(rect.left >= 0 && rect.top >= 0 && rect.right <= width && rect.bottom <= height) {
         "Crop rectangle must be within image bounds"
     }
@@ -42,26 +42,6 @@ fun ImageBitmap.crop(rect: IntRect): ImageBitmap {
             srcOffset = IntOffset(rect.left, rect.top),
             srcSize = IntSize(rect.width, rect.height),
             dstSize = IntSize(rect.width, rect.height),
-            paint = Paint()
-        )
-    }
-}
-
-/**
- * Scaling [ImageBitmap] to given new width and new height.
- *
- * @param newWidth new width
- * @param newHeight new... height. Are you surprised?
- *
- * @return [ImageBitmap] copy, scaled to given new width and new height
- */
-fun ImageBitmap.scale(newWidth: Int, newHeight: Int): ImageBitmap {
-    return ImageBitmap(newWidth, newHeight).apply {
-        val canvas = Canvas(this)
-        canvas.drawImageRect(
-            image = this@scale,
-            srcSize = IntSize(this@scale.width, this@scale.height),
-            dstSize = IntSize(newWidth, newHeight),
             paint = Paint()
         )
     }
