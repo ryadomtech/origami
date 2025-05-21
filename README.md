@@ -35,8 +35,8 @@ val origami = Origami.of(source)
 
 OrigamiImage(
   origami = origami,
-  colors = OrigamiColors.defaults(), // Customize colors here 
-  cropArea = OrigamiCropArea() // Customize crop area here
+  colors = object: OrigamiColors { }, // Customize colors 
+  cropArea = OrigamiCropArea() // Customize crop area
 )
 
 // Returns cropped image
