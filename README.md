@@ -15,7 +15,7 @@ Compose Multiplatform.
 
 ### Implementation
 
-In your shared module's build.gradle.kts add
+In your shared module's build.gradle.kts add:
 
 ```Gradle Kotlin DSL
 kotlin.sourceSets.commonMain.dependencies {
@@ -25,8 +25,8 @@ kotlin.sourceSets.commonMain.dependencies {
 
 ### Usage
 
-To create an `Origami` instance, you must call the `Origami.of()` funcation and pass an
-`ImageBitmap` or `Painter` as an arguments.
+To create an `Origami` instance, you need to call the `Origami.of()` function and pass
+`ImageBitmap` or `Painter` as arguments.
 Then use the `Origami` object as shown below.
 
 ```Kotlin
@@ -45,7 +45,7 @@ origami.crop()
 
 ### Customization
 #### 1. Colors
-Via `OrigamiColors` you can customize `backgroundColor`, `guidelinesColor` and `edgesColor`
+With `OrigamiColors` you can customize `backgroundColor`, `guidelinesColor` and `edgesColor`:
 
 ```Kotlin
 interface OrigamiColors {
@@ -58,13 +58,15 @@ interface OrigamiColors {
 ```
 
 #### 2. Crop area
-Via `OrigamiCropArea` you can customize your crop area: 
+With `OrigamiCropArea` you can customize the crop area:
 
-2.1. Guidelines count and width 
+2.1. Number and width of guidelines
 
-2.2. Edges shape via `OrigamiEdges`. You can use default `Circle` or `Rectangle` shape or create your own using `DrawScope`
-2.3. Hihglighted area shape via `OrigamiHighlightedShape`. You can use `Circle`, `Rectangle` (Default) or `RoundedRectangle` defaults or create your own shape. 
-2.4. Aspect ratio (free style movement or keeping aspect ratio) via `OrigamiAspectRatio`.
+2.2. Shape edges via `OrigamiEdges`. You can use the default `Circle` or `Rectangle` shape, or create your own using `DrawScope`
+
+2.3. The highlighted area of ​​the shape via `OrigamiHighlightedShape`. You can use `Circle`, `Rectangle` (default) or `RoundedRectangle` by default or create your own shape
+
+2.4. Aspect ratio (free style movement or maintaining proportions) via `OrigamiAspectRatio`
 
 ```Kotlin
 data class OrigamiCropArea(
