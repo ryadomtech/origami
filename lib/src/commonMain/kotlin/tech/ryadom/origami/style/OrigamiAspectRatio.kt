@@ -16,10 +16,16 @@
 
 package tech.ryadom.origami.style
 
+import androidx.compose.ui.unit.IntSize
+
 /**
  * Aspect ratio for [OrigamiCropArea]
  * @param isVariable pass true if you want the user to be able to change the ratio using gestures
+ * @param aspectRatio fixed aspect ratio if [isVariable] is false, else initial aspect ratio
  */
 data class OrigamiAspectRatio(
-    val isVariable: Boolean = false
-)
+    val isVariable: Boolean = false,
+    val aspectRatio: IntSize = IntSize(1, 1)
+) {
+    fun calculateAspectRatio() = 1f * aspectRatio.width / aspectRatio.height
+}

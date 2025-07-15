@@ -22,9 +22,7 @@ import androidx.compose.ui.unit.dp
 /**
  * Origami crop area.
  *
- * The area whose contents will be returned when [Origami.crop] is called.
- *
- * @param aspectRatio [OrigamiAspectRatio] for crop area
+ * The area whose contents will be returned when [tech.ryadom.origami.Origami.crop] is called.
  *
  * @param highlightedShape [OrigamiHighlightedShape] that will fit into the crop area and highlight
  * the content inside it. Note that shape is for preview only and does not affect the crop area.
@@ -38,7 +36,6 @@ import androidx.compose.ui.unit.dp
  * to hide guidelines
  */
 data class OrigamiCropArea(
-    val aspectRatio: OrigamiAspectRatio = OrigamiAspectRatio(),
     val highlightedShape: OrigamiHighlightedShape = OrigamiHighlightedShape.Default,
     val edges: OrigamiEdges? = OrigamiEdges.Circle(6.dp),
     val guidelinesWidth: Dp = 2.dp,

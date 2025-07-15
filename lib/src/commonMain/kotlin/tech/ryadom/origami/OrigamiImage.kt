@@ -57,7 +57,7 @@ fun OrigamiImage(
 ) {
     // State of crop rect.
     val origamiCropRect by rememberSaveable(saver = RectStateSaver()) {
-        origami.prepare(cropArea)
+        origami.origamiRect
     }
 
     Box(
@@ -114,9 +114,7 @@ fun OrigamiImage(
                 )
 
                 // Draw edges if necessary
-                if (cropArea.edges != null) {
-                    cropArea.edges.onDraw(this, origamiCropRect, colors)
-                }
+                cropArea.edges?.onDraw(this, origamiCropRect, colors)
             }
         )
     }

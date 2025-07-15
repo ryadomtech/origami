@@ -29,6 +29,7 @@ import tech.ryadom.origami.util.extensions.crop
 import tech.ryadom.origami.util.extensions.findEdgeContaining
 import tech.ryadom.origami.util.extensions.update
 import kotlin.math.abs
+import kotlin.math.min
 import kotlin.math.sign
 
 /**
@@ -50,15 +51,43 @@ internal class OrigamiCroppingUtils(
 
     private var initialTopLeft = Offset.Zero
 
-    internal fun cropImage(bitmapImage: ImageBitmap): ImageBitmap {
-        val finalCropRect = getRect().translate(-initialTopLeft)
-        if (finalCropRect.width > 0 && finalCropRect.height > 0) {
-            return bitmapImage.crop(
-                rect = finalCropRect.roundToIntRect()
-            )
+    internal fun crop(bitmapImage: ImageBitmap): ImageBitmap {
+        val bitmapWidth = bitmapImage.width.toFloat()
+        val bitmapHeight = bitmapImage.height.toFloat()
+
+        if (bitmapWidth <= 0 || bitmapHeight <= 0) return bitmapImage
+
+        val composeWidth = sourceSize.width
+        val composeHeight = sourceSize.height
+
+        val scale = min(composeWidth / bitmapWidth, composeHeight / bitmapHeight)
+        val scaledWidth = bitmapWidth * scale
+        val scaledHeight = bitmapHeight * scale
+
+        val imageOffsetX = (composeWidth - scaledWidth) / 2
+        val imageOffsetY = (composeHeight - scaledHeight) / 2
+
+        val imageInBox = initialTopLeft + Offset(imageOffsetX, imageOffsetY)
+
+        val cropRect = getRect()
+
+        val imageRect = Rect(imageInBox, Size(scaledWidth, scaledHeight))
+        val intersectedCrop = cropRect.intersect(imageRect)
+
+        if (intersectedCrop.width <= 0 || intersectedCrop.height <= 0) {
+            return bitmapImage
         }
 
-        return bitmapImage
+        val bitmapCropRect = Rect(
+            left = (intersectedCrop.left - imageInBox.x) / scale,
+            top = (intersectedCrop.top - imageInBox.y) / scale,
+            right = (intersectedCrop.right - imageInBox.x) / scale,
+            bottom = (intersectedCrop.bottom - imageInBox.y) / scale
+        )
+
+        return bitmapImage.crop(
+            bitmapCropRect.roundToIntRect()
+        )
     }
 
     internal fun onGloballyPositioned(topLeft: Offset, size: IntSize) {
@@ -110,42 +139,43 @@ internal class OrigamiCroppingUtils(
         if (aspectRatio.isVariable) {
             configureVariableRect()
         } else {
-            configureSquareRect()
+            configureFixedRect()
         }
     }
 
-    private fun configureSquareRect() {
+    private fun configureFixedRect() {
         val (width, height) = sourceSize.width to sourceSize.height
-        val minRectSide = minOf(width, height)
-        val squareSize = minRectSide * 0.8f
+        val aspectRatio = aspectRatio.calculateAspectRatio()
+
+        val maxWidth = min(width, height * aspectRatio)
+
+        val targetWidth = maxWidth * 0.85f
+        val targetHeight = targetWidth / aspectRatio
+
+        val left = initialTopLeft.x + (width - targetWidth) / 2
+        val top = initialTopLeft.y + (height - targetHeight) / 2
 
         updateRect(
-            topLeft = calculateSquarePosition(initialTopLeft, width, height, squareSize),
-            size = Size(squareSize, squareSize)
+            topLeft = Offset(left, top),
+            size = Size(targetWidth, targetHeight)
         )
     }
 
     private fun configureVariableRect() {
         val (width, height) = sourceSize.width to sourceSize.height
+        val ratio = aspectRatio.calculateAspectRatio()
+
+        val maxWidth = min(width, height * ratio)
+
+        val targetWidth = maxWidth * 0.85f
+        val targetHeight = targetWidth / ratio
+
+        val left = initialTopLeft.x + (width - targetWidth) / 2
+        val top = initialTopLeft.y + (height - targetHeight) / 2
 
         updateRect(
-            topLeft = Offset(
-                initialTopLeft.x + (width * 0.05f),
-                initialTopLeft.y + (height * 0.05f)
-            ),
-            size = Size(width, height) * 0.9f
-        )
-    }
-
-    private fun calculateSquarePosition(
-        topLeft: Offset,
-        width: Float,
-        height: Float,
-        squareSize: Float
-    ): Offset {
-        return Offset(
-            x = topLeft.x + ((width - squareSize) / 2),
-            y = topLeft.y + ((height - squareSize) / 2)
+            topLeft = Offset(left, top),
+            size = Size(targetWidth, targetHeight)
         )
     }
 
@@ -235,8 +265,7 @@ internal class OrigamiCroppingUtils(
         val newSize = if (aspectRatio.isVariable) {
             Size(width, height)
         } else {
-            val squareSize = minOf(width, height)
-            Size(squareSize, squareSize)
+            Size(width, width / aspectRatio.calculateAspectRatio())
         }
 
         updateRect(
@@ -256,8 +285,9 @@ internal class OrigamiCroppingUtils(
     }
 
     private fun adjustTopLeftToSource(topLeft: Offset): Offset {
-        val maxX = sourceSize.width + initialTopLeft.x - getRect().size.width
-        val maxY = sourceSize.height + initialTopLeft.y - getRect().size.height
+        val currentSize = getRect().size
+        val maxX = sourceSize.width + initialTopLeft.x - currentSize.width
+        val maxY = sourceSize.height + initialTopLeft.y - currentSize.height
 
         return Offset(
             topLeft.x.coerceIn(initialTopLeft.x, maxX),

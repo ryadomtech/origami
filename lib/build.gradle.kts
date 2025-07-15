@@ -1,4 +1,3 @@
-import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
@@ -58,7 +57,7 @@ kotlin {
 
 android {
     namespace = "tech.ryadom.origami"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
@@ -71,14 +70,14 @@ android {
 }
 
 mavenPublishing {
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral()
 
     signAllPublications()
 
     coordinates(
         groupId = "tech.ryadom",
         artifactId = "origami",
-        version = "0.0.3"
+        version = "0.0.4"
     )
 
     pom {

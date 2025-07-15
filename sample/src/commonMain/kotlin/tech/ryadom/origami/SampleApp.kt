@@ -32,24 +32,26 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import origami.sample.generated.resources.Res
-import origami.sample.generated.resources.sample
+import origami.sample.generated.resources.sample2
 import tech.ryadom.origami.style.OrigamiAspectRatio
 import tech.ryadom.origami.style.OrigamiCropArea
 import tech.ryadom.origami.style.OrigamiHighlightedShape
 
 @Composable
 fun SampleApp() {
-    val painter = painterResource(Res.drawable.sample)
+    val painter = painterResource(Res.drawable.sample2)
     val scope = rememberCoroutineScope()
 
     val origami = Origami.of(
         painter = painter,
         density = LocalDensity.current,
-        layoutDirection = LocalLayoutDirection.current
+        layoutDirection = LocalLayoutDirection.current,
+        aspectRatio = OrigamiAspectRatio(isVariable = false, aspectRatio = IntSize(16, 9))
     )
 
     var croppedImage by remember { mutableStateOf<ImageBitmap?>(null) }
@@ -121,8 +123,7 @@ fun SampleApp() {
             modifier = Modifier.fillMaxSize()
                 .padding(it),
             cropArea = OrigamiCropArea(
-                highlightedShape = OrigamiHighlightedShape.Circle,
-                aspectRatio = OrigamiAspectRatio(isVariable = false)
+                highlightedShape = OrigamiHighlightedShape.Default
             )
         )
     }
