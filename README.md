@@ -19,7 +19,7 @@ In your shared module's build.gradle.kts add:
 
 ```Gradle Kotlin DSL
 kotlin.sourceSets.commonMain.dependencies {
-  implementation("tech.ryadom:origami:0.0.3")
+  implementation("tech.ryadom:origami:0.0.4")
 }
 ```
 
@@ -66,11 +66,8 @@ With `OrigamiCropArea` you can customize the crop area:
 
 2.3. The highlighted area of ​​the shape via `OrigamiHighlightedShape`. You can use `Circle`, `Rectangle` (default) or `RoundedRectangle` by default or create your own shape
 
-2.4. Aspect ratio (free style movement or maintaining proportions) via `OrigamiAspectRatio`
-
 ```Kotlin
 data class OrigamiCropArea(
-    val aspectRatio: OrigamiAspectRatio = OrigamiAspectRatio(),
     val highlightedShape: OrigamiHighlightedShape = OrigamiHighlightedShape.Default,
     val edges: OrigamiEdges? = OrigamiEdges.Circle(6.dp),
     val guidelinesWidth: Dp = 2.dp,
