@@ -34,10 +34,13 @@ import androidx.compose.ui.unit.dp
  *
  * @param guidelinesCount count of the vertical and horizontal guidelines. You can also pass 0
  * to hide guidelines
+ *
+ * @param initialPaddings [OrigamiCropAreaPadding]
  */
 data class OrigamiCropArea(
     val highlightedShape: OrigamiHighlightedShape = OrigamiHighlightedShape.Default,
     val edges: OrigamiEdges? = OrigamiEdges.Circle(6.dp),
     val guidelinesWidth: Dp = 2.dp,
-    val guidelinesCount: Int = 2
+    val guidelinesCount: Int = 2,
+    val initialPaddings: OrigamiCropAreaPadding = OrigamiCropAreaPadding.createDefault()
 )

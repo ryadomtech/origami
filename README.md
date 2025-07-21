@@ -44,7 +44,9 @@ origami.crop()
 ```
 
 ### Customization
+
 #### 1. Colors
+
 With `OrigamiColors` you can customize `backgroundColor`, `guidelinesColor` and `edgesColor`:
 
 ```Kotlin
@@ -58,13 +60,16 @@ interface OrigamiColors {
 ```
 
 #### 2. Crop area
+
 With `OrigamiCropArea` you can customize the crop area:
 
 2.1. Number and width of guidelines
 
-2.2. Shape edges via `OrigamiEdges`. You can use the default `Circle` or `Rectangle` shape, or create your own using `DrawScope`
+2.2. Shape edges via `OrigamiEdges`. You can use the default `Circle` or `Rectangle` shape, or
+create your own using `DrawScope`
 
-2.3. The highlighted area of ​​the shape via `OrigamiHighlightedShape`. You can use `Circle`, `Rectangle` (default) or `RoundedRectangle` by default or create your own shape
+2.3. The highlighted area of ​​the shape via `OrigamiHighlightedShape`. You can use `Circle`,
+`Rectangle` (default) or `RoundedRectangle` by default or create your own shape
 
 ```Kotlin
 data class OrigamiCropArea(

@@ -16,15 +16,14 @@
 
 package tech.ryadom.origami
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.ClipOp
@@ -37,32 +36,22 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.unit.Dp
-import tech.ryadom.origami.style.OrigamiColors
 import tech.ryadom.origami.style.OrigamiCropArea
-import tech.ryadom.origami.util.extensions.RectStateSaver
 
 /**
  * Composable for origami cropping component
- * @param origami [Origami] instance to hold and manage component state
  * @param modifier [Modifier]
- * @param colors [OrigamiColors]
- * @param cropArea [OrigamiCropArea]
+ * @param origami [Origami] instance to hold and manage component state
  */
 @Composable
 fun OrigamiImage(
-    origami: Origami,
     modifier: Modifier = Modifier,
-    colors: OrigamiColors = OrigamiColors.createDefault(),
-    cropArea: OrigamiCropArea = OrigamiCropArea()
+    origami: Origami
 ) {
     // State of crop rect.
-    val origamiCropRect by rememberSaveable(saver = RectStateSaver()) {
-        origami.origamiRect
-    }
+    val origamiCropRect by origami.cropRect
 
-    Box(
-        modifier = modifier.fillMaxSize()
-    ) {
+    Box(modifier = modifier) {
         // Draw image source
         origami.source.Content(
             modifier = Modifier
@@ -75,7 +64,7 @@ fun OrigamiImage(
                 }
         )
 
-        Canvas(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(Unit) {
@@ -93,29 +82,34 @@ fun OrigamiImage(
                             origami.onDragEnd()
                         }
                     )
-                },
-            onDraw = {
-                // Draw background
-                clipPath(
-                    path = cropArea.highlightedShape.getPath(origamiCropRect),
-                    clipOp = ClipOp.Difference
-                ) {
-                    drawRect(
-                        SolidColor(colors.backgroundColor)
-                    )
                 }
+                .drawWithCache {
+                    onDrawBehind {
+                        clipPath(
+                            path = origami.cropArea.highlightedShape.getPath(origamiCropRect),
+                            clipOp = ClipOp.Difference
+                        ) {
+                            drawRect(
+                                brush = SolidColor(origami.colors.backgroundColor)
+                            )
+                        }
 
-                // Draw crop area
-                drawCropArea(
-                    guidelinesColor = colors.guidelinesColor,
-                    guidelinesWidth = cropArea.guidelinesWidth,
-                    origamiCropRect = origamiCropRect,
-                    guidelinesCount = cropArea.guidelinesCount
-                )
+                        // Draw crop area
+                        drawCropArea(
+                            guidelinesColor = origami.colors.guidelinesColor,
+                            guidelinesWidth = origami.cropArea.guidelinesWidth,
+                            guidelinesCount = origami.cropArea.guidelinesCount,
+                            origamiCropRect = origamiCropRect
+                        )
 
-                // Draw edges if necessary
-                cropArea.edges?.onDraw(this, origamiCropRect, colors)
-            }
+                        // Draw edges if necessary
+                        origami.cropArea.edges?.onDraw(
+                            scope = this,
+                            rect = origamiCropRect,
+                            colors = origami.colors
+                        )
+                    }
+                }
         )
     }
 }

@@ -16,13 +16,18 @@
 
 package tech.ryadom.origami.style
 
-
 /**
- * Aspect ratio for [OrigamiCropArea]
- * @param isVariable pass true if you want the user to be able to change the ratio using gestures
- * @param aspectRatio fixed aspect ratio if [isVariable] is false, else initial aspect ratio
+ * Origami compression options
+ * @property maxSize max size of image in bytes. [Unlimited] (original size) by default.
+ * @property startQuality the quality from which we will start trying to compress
+ * the image until its size is greater than [maxSize]
+ * @property qualityDowngradeStep we will downgrade [startQuality] by this step on every iteration.
+ * So, number of compress iterations ≈ [startQuality] / [qualityDowngradeStep]
  */
-data class OrigamiAspectRatio(
-    val isVariable: Boolean = false,
-    val aspectRatio: Float = 1f
+data class OrigamiCompression(
+    val maxSize: Long = Unlimited,
+    val startQuality: Int = 90,
+    val qualityDowngradeStep: Int = 10
 )
+
+private const val Unlimited = Long.MAX_VALUE

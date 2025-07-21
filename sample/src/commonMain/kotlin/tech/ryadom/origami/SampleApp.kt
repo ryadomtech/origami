@@ -32,28 +32,17 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import origami.sample.generated.resources.Res
-import origami.sample.generated.resources.sample2
+import origami.sample.generated.resources.sample
 import tech.ryadom.origami.style.OrigamiAspectRatio
 import tech.ryadom.origami.style.OrigamiCropArea
 import tech.ryadom.origami.style.OrigamiHighlightedShape
 
 @Composable
 fun SampleApp() {
-    val painter = painterResource(Res.drawable.sample2)
-    val scope = rememberCoroutineScope()
-
-    val origami = Origami.of(
-        painter = painter,
-        density = LocalDensity.current,
-        layoutDirection = LocalLayoutDirection.current,
-        aspectRatio = OrigamiAspectRatio(isVariable = false, aspectRatio = IntSize(16, 9))
-    )
-
     var croppedImage by remember { mutableStateOf<ImageBitmap?>(null) }
     if (croppedImage != null) {
         Column(
@@ -93,6 +82,19 @@ fun SampleApp() {
         return
     }
 
+    val painter = painterResource(Res.drawable.sample)
+    val scope = rememberCoroutineScope()
+
+    val origami = Origami(
+        painter = painter,
+        density = LocalDensity.current,
+        layoutDirection = LocalLayoutDirection.current,
+        aspectRatio = OrigamiAspectRatio(false),
+        cropArea = OrigamiCropArea(
+            highlightedShape = OrigamiHighlightedShape.Circle
+        )
+    )
+
     Scaffold(
         modifier = Modifier.fillMaxSize()
             .background(Color.Black.copy(0.7f))
@@ -121,10 +123,7 @@ fun SampleApp() {
         OrigamiImage(
             origami = origami,
             modifier = Modifier.fillMaxSize()
-                .padding(it),
-            cropArea = OrigamiCropArea(
-                highlightedShape = OrigamiHighlightedShape.Default
-            )
+                .padding(it)
         )
     }
 }
