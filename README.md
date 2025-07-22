@@ -1,7 +1,7 @@
 # Origami — simple image cropping lib for KMP
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
-[![Maven Central](https://img.shields.io/maven-central/v/tech.ryadom/origami?color=blue)](https://search.maven.org/search?q=g:tech.ryadom.origami)
+[![Maven Central](https://img.shields.io/maven-central/v/tech.ryadom/origami?color=blue)](https://central.sonatype.com/artifact/tech.ryadom/origami)
 
 ![badge-android](http://img.shields.io/badge/platform-android-6EDB8D.svg?style=flat)
 ![badge-ios](http://img.shields.io/badge/platform-ios-CDCDCD.svg?style=flat)
