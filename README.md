@@ -1,7 +1,15 @@
-# Origami
+# Origami — simple image cropping lib for KMP
 
-With this tool you can crop and perform some transformation actions (`rotate`, `flip`) on images in
-Compose Multiplatform.
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.2.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+[![Maven Central](https://img.shields.io/maven-central/v/tech.ryadom/origami?color=blue)](https://search.maven.org/search?q=g:tech.ryadom.origami)
+
+![badge-android](http://img.shields.io/badge/platform-android-6EDB8D.svg?style=flat)
+![badge-ios](http://img.shields.io/badge/platform-ios-CDCDCD.svg?style=flat)
+![badge-desktop](https://img.shields.io/badge/platform-desktop-3474eb.svg?style=flat)
+![badge-js](https://img.shields.io/badge/platform-js-fcba03.svg?style=flat)
+![badge-wasm](https://img.shields.io/badge/platform-wasm-331f06.svg?style=flat)
+
+With this tool you can crop images in Compose Multiplatform.
 
 ## Supported targets
 
@@ -19,25 +27,25 @@ In your shared module's build.gradle.kts add:
 
 ```Gradle Kotlin DSL
 kotlin.sourceSets.commonMain.dependencies {
-  implementation("tech.ryadom:origami:0.0.4")
+  implementation("tech.ryadom:origami:0.0.5")
 }
 ```
 
 ### Usage
 
-To create an `Origami` instance, you need to call the `Origami.of()` function and pass
-`ImageBitmap` or `Painter` as arguments.
+To create an `Origami` instance, you need to call any of `Origami` constructors and pass
+source (now supports `ImageBitmap` and `Painter`) and options as arguments.
 Then use the `Origami` object as shown below.
 
 ```Kotlin
 val source = createYourSource()
-val origami = Origami.of(source)
+val colors = object: OrigamiColors { } // Customize colors
+val cropArea = OrigamiCropArea() // Customize crop area
+val aspectRatio = OrigamiAspectRatio() // Customize aspect ratio
 
-OrigamiImage(
-  origami = origami,
-  colors = object: OrigamiColors { }, // Customize colors 
-  cropArea = OrigamiCropArea() // Customize crop area
-)
+val origami = Origami(source, colors, cropArea, aspectRatio)
+
+OrigamiImage(origami = origami)
 
 // Returns cropped image
 origami.crop()
@@ -71,12 +79,26 @@ create your own using `DrawScope`
 2.3. The highlighted area of ​​the shape via `OrigamiHighlightedShape`. You can use `Circle`,
 `Rectangle` (default) or `RoundedRectangle` by default or create your own shape
 
+2.4. Crop area initial paddings via `OrigamiCropAreaPadding`
+
 ```Kotlin
 data class OrigamiCropArea(
     val highlightedShape: OrigamiHighlightedShape = OrigamiHighlightedShape.Default,
     val edges: OrigamiEdges? = OrigamiEdges.Circle(6.dp),
     val guidelinesWidth: Dp = 2.dp,
-    val guidelinesCount: Int = 2
+    val guidelinesCount: Int = 2,
+    val initialPaddings: OrigamiCropAreaPadding = OrigamiCropAreaPadding.createDefault()
+)
+```
+
+#### 3. Aspect ratio
+
+With `OrigamiAspectRatio` you can specify any width / height ratio of crop area you need.
+
+```Kotlin
+data class OrigamiAspectRatio(
+    val isVariable: Boolean = false,
+    val aspectRatio: Float = 1f
 )
 ```
 
