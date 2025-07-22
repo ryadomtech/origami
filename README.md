@@ -27,7 +27,7 @@ In your shared module's build.gradle.kts add:
 
 ```Gradle Kotlin DSL
 kotlin.sourceSets.commonMain.dependencies {
-  implementation("tech.ryadom:origami:0.0.5")
+  implementation("tech.ryadom:origami:0.0.6")
 }
 ```
 
