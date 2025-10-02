@@ -21,20 +21,18 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.roundToIntRect
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.fastCoerceIn
+import tech.ryadom.origami.shared.ImageCompressor
+import tech.ryadom.origami.shared.createImageCompressor
 import tech.ryadom.origami.style.OrigamiAspectRatio
 import tech.ryadom.origami.style.OrigamiColors
 import tech.ryadom.origami.style.OrigamiCropArea
 import tech.ryadom.origami.util.BitmapSource
 import tech.ryadom.origami.util.Edge
 import tech.ryadom.origami.util.OrigamiSource
-import tech.ryadom.origami.util.PainterSource
 import tech.ryadom.origami.util.extensions.copy
 import tech.ryadom.origami.util.extensions.crop
 import tech.ryadom.origami.util.extensions.findEdgeContaining
@@ -77,17 +75,16 @@ class Origami(
         imageBitmap: ImageBitmap,
         colors: OrigamiColors = OrigamiColors.createDefault(),
         cropArea: OrigamiCropArea = OrigamiCropArea(),
-        aspectRatio: OrigamiAspectRatio = OrigamiAspectRatio()
-    ) : this(BitmapSource(imageBitmap), colors, cropArea, aspectRatio)
-
-    constructor(
-        painter: Painter,
-        density: Density,
-        layoutDirection: LayoutDirection,
-        colors: OrigamiColors = OrigamiColors.createDefault(),
-        cropArea: OrigamiCropArea = OrigamiCropArea(),
-        aspectRatio: OrigamiAspectRatio = OrigamiAspectRatio()
-    ) : this(PainterSource(painter, density, layoutDirection), colors, cropArea, aspectRatio)
+        aspectRatio: OrigamiAspectRatio = OrigamiAspectRatio(),
+        compressor: ImageCompressor = createImageCompressor()
+    ) : this(
+        source = BitmapSource(
+            imageBitmap = compressor.scaleToPlatformLimits(imageBitmap)
+        ),
+        colors = colors,
+        cropArea = cropArea,
+        origamiAspectRatio = aspectRatio
+    )
 
     /**
      * Cropping [source] to crop area

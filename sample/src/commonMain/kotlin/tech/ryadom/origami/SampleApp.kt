@@ -27,11 +27,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -86,9 +91,10 @@ fun SampleApp() {
     val scope = rememberCoroutineScope()
 
     val origami = Origami(
-        painter = painter,
-        density = LocalDensity.current,
-        layoutDirection = LocalLayoutDirection.current,
+        imageBitmap = painter.toImageBitmap(
+            density = LocalDensity.current,
+            layoutDirection = LocalLayoutDirection.current
+        ),
         aspectRatio = OrigamiAspectRatio(false),
         cropArea = OrigamiCropArea(
             highlightedShape = OrigamiHighlightedShape.Circle
@@ -126,4 +132,19 @@ fun SampleApp() {
                 .padding(it)
         )
     }
+}
+
+// Convert painter to image bitmap
+private fun Painter.toImageBitmap(
+    density: Density,
+    layoutDirection: LayoutDirection
+): ImageBitmap {
+    val bitmap = ImageBitmap(intrinsicSize.width.toInt(), intrinsicSize.height.toInt())
+    val canvas = Canvas(bitmap)
+
+    CanvasDrawScope().draw(density, layoutDirection, canvas, intrinsicSize) {
+        draw(intrinsicSize)
+    }
+
+    return bitmap
 }

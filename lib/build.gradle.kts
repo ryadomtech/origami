@@ -60,7 +60,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        minSdk = 24
+        minSdk = 23
     }
 
     compileOptions {
@@ -77,7 +77,7 @@ mavenPublishing {
     coordinates(
         groupId = "tech.ryadom",
         artifactId = "origami",
-        version = "0.0.6"
+        version = "1.0.0"
     )
 
     pom {
