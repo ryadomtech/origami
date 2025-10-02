@@ -28,14 +28,14 @@ In your shared module's build.gradle.kts add:
 
 ```Gradle Kotlin DSL
 kotlin.sourceSets.commonMain.dependencies {
-  implementation("tech.ryadom:origami:0.0.6")
+  implementation("tech.ryadom:origami:1.0.0")
 }
 ```
 
 ### Usage
 
 To create an `Origami` instance, you need to call any of `Origami` constructors and pass
-source (now supports `ImageBitmap` and `Painter`) and options as arguments.
+source (now supports `ImageBitmap`) and options as arguments.
 Then use the `Origami` object as shown below.
 
 ```Kotlin
