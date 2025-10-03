@@ -1,5 +1,5 @@
 ![image](origami_logo.png)
-# Origami — simple image cropping lib for KMP
+# Origami — simple image cropping composable for Kotlin Multiplatform
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 [![Maven Central](https://img.shields.io/maven-central/v/tech.ryadom/origami?color=blue)](https://central.sonatype.com/artifact/tech.ryadom/origami)
