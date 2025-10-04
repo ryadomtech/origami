@@ -44,7 +44,7 @@ val colors = object: OrigamiColors { } // Customize colors
 val cropArea = OrigamiCropArea() // Customize crop area
 val aspectRatio = OrigamiAspectRatio() // Customize aspect ratio
 
-val origami = Origami(source, colors, cropArea, aspectRatio)
+val origami = remember { Origami(source, colors, cropArea, aspectRatio) }
 
 OrigamiImage(origami = origami)
 
